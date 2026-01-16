@@ -388,6 +388,40 @@ function validateEmail() {
   cursor: not-allowed;
   transform: none !important;
 }
+#shippingAddress {
+  width: 100%;
+  min-height: 80px;        /* enough space for multiple lines */
+  padding: 0.75rem 0.9rem; /* comfy padding inside */
+  border-radius: 12px;     /* rounded corners like your buttons */
+  border: 1px solid #d1d5db; 
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: #111827;
+  resize: vertical;        /* allow vertical resizing */
+  transition: all 0.2s ease;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+}
+
+/* Focus effect */
+#shippingAddress:focus {
+  outline: none;
+  border-color: #6366f1; /* blue like selected button */
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.2);
+  background: #f9fafb; /* subtle highlight */
+}
+
+/* Placeholder style */
+#shippingAddress::placeholder {
+  color: #9ca3af;
+  font-style: italic;
+}
+
+/* Small spacing under textarea */
+#shippingFee {
+  margin-top: 0.3rem;
+  font-size: 0.8rem;
+  color: #555;
+}
 </style>
 
 
