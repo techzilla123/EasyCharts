@@ -298,88 +298,269 @@ function validateEmail() {
 </div>
 
 <style>
-  .image-wrapper {
-    position: relative;
-    overflow: hidden;
-  }
+/* === Preserve existing image-wrapper styles === */
+.image-wrapper {
+  position: relative;
+  overflow: hidden;
+}
 
-  .image-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-   
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
+.image-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+ 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
 
-  .image-wrapper:hover .image-overlay {
-    opacity: 1;
-  }
+.image-wrapper:hover .image-overlay {
+  opacity: 1;
+}
 
-  .overlay-btn {
-    padding: 8px 18px;
-    background: #ffffff;
-    color: #000;
-    font-size: 14px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-weight: 600;
-    transition: transform 0.2s ease;
-  }
+.overlay-btn {
+  padding: 8px 18px;
+  background: #ffffff;
+  color: #000;
+  font-size: 14px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: transform 0.2s ease;
+}
 
-  .overlay-btn:hover {
-    transform: scale(1.1);
-  }
+.overlay-btn:hover {
+  transform: scale(1.1);
+}
+
+/* === Modal Button Grid === */
+.button-grid {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.button-grid .btn {
+  flex: 1;
+  padding: 0.8rem 0;
+  border-radius: 12px;
+  border: 1px solid #d1d5db;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  background: #f9fafb;
+  transition: all 0.2s ease;
+  text-align: center;
+  color: #111827; /* default text color */
+}
+
+/* Hover for non-selected buttons */
+.button-grid .btn:hover:not(.selected):not(.disabled) {
+  background: #eef2ff; /* light hover only for unselected */
+  color: #111827;
+  transform: scale(1.03);
+}
+
+/* Selected button style */
+.button-grid .btn.selected {
+  background: #6366f1; /* blue */
+  color: #fff;         /* white text */
+  border-color: #6366f1;
+}
+
+/* Selected button hover (keep color and text white) */
+.button-grid .btn.selected:hover {
+  background: #6366f1; /* no change */
+  color: #fff;         /* text stays visible */
+  transform: scale(1.03);
+}
+
+/* Disabled buttons */
+.button-grid .btn.disabled {
+  background: #d1d5db;
+  color: #6b7280;
+  cursor: not-allowed;
+  transform: none !important;
+}
 </style>
+
+
 
         </div>
       </section>
-        <div class="modal-bg" id="emailModal">
+       <div class="modal-bg" id="emailModal">
   <div class="modal">
-    <h2>Enter Your Email</h2>
-    <input type="email" id="customerEmail" placeholder="you@example.com" oninput="validateEmail()" />
+    <h2>Complete Your Order</h2>
+
+    <!-- Email -->
+    <input type="email" id="customerEmail" placeholder="you@example.com" oninput="validateModal()" />
+
+    <!-- Copy Selection -->
+    <p class="font-medium">Select Format</p>
+  </br>
+    <div class="button-grid mt-3">
+      <button type="button" class="btn" id="softCopyBtn" onclick="selectCopy('soft')">
+        Soft Copy<br>₦5,000
+      </button>
+      <button type="button" class="btn" id="hardCopyBtn" onclick="selectCopy('hard')">
+        Hard Copy<br>₦7,000</button>
+    </div>
+
+    <!-- Delivery Options -->
+    <div id="deliverySection" style="display:none;">
+    </br>
+      <p class="font-medium">Delivery Option</p>
+      </br>
+      <div class="button-grid">
+        <button type="button" class="btn" id="pickupBtn" onclick="selectDelivery('pickup')">
+          Pickup
+        </button>
+        <button type="button" class="btn" id="shipBtn" onclick="selectDelivery('shipping')">
+          Ship to Address
+        </button>
+      </div>
+      <textarea id="shippingAddress" placeholder="Enter shipping address" style="display:none;" oninput="validateModal()"></textarea>
+      <p id="shippingFee" style="display:none; font-size:0.8rem; color:#555;">Shipping fee: ₦2,000</p>
+    </div>
+
+    <!-- Total -->
+    <div class="total">
+    </br>
+      <span>Total</span>
+      <span id="totalAmount">₦0</span>
+    </div>
+
+    <!-- Buttons -->
     <div class="buttons">
-      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-      <button class="btn-continue disabled" id="continueBtn" onclick="pay()" disabled>Continue</button>
+      <button type="button" class="btn" onclick="closeModal()">Cancel</button>
+      <button type="button" class="btn disabled" id="continueBtn" onclick="pay()" disabled>Pay</button>
     </div>
   </div>
 </div>
+
 <script>
+  function downloadBook() {
+  const link = document.createElement('a');
+  link.href = '/path-to-your-book.pdf'; // replace with your actual PDF file path
+  link.download = 'Cooing-of-a-Homing-Pigeon.pdf'; // suggested filename
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+} let copyType = null;
+let deliveryType = null;
+let shippingAddressVal = '';
+const SHIPPING_FEE = 2000;
+const softPrice = 5000;
+const hardPrice = 7000;
+
+function openModal() {
+  document.getElementById('emailModal').style.display = 'flex';
+}
+function closeModal() {
+  document.getElementById('emailModal').style.display = 'none';
+  resetModal();
+}
+function resetModal() {
+  document.getElementById('customerEmail').value = '';
+  copyType = null;
+  deliveryType = null;
+  shippingAddressVal = '';
+  document.getElementById('shippingAddress').value = '';
+  document.getElementById('deliverySection').style.display = 'none';
+  document.getElementById('shippingAddress').style.display = 'none';
+  document.getElementById('shippingFee').style.display = 'none';
+  updateSelectionUI();
+  updateTotal();
+  validateModal();
+}
+
+function selectCopy(type) {
+  copyType = type;
+  if (type === 'hard') {
+    document.getElementById('deliverySection').style.display = 'block';
+  } else {
+    document.getElementById('deliverySection').style.display = 'none';
+    deliveryType = null;
+  }
+  updateSelectionUI();
+  updateTotal();
+  validateModal();
+}
+
+function selectDelivery(type) {
+  deliveryType = type;
+  if (type === 'shipping') {
+    document.getElementById('shippingAddress').style.display = 'block';
+    document.getElementById('shippingFee').style.display = 'block';
+  } else {
+    document.getElementById('shippingAddress').style.display = 'none';
+    document.getElementById('shippingFee').style.display = 'none';
+  }
+  updateSelectionUI();
+  updateTotal();
+  validateModal();
+}
+
+function updateSelectionUI() {
+  ['softCopyBtn','hardCopyBtn','pickupBtn','shipBtn'].forEach(id=>{
+    document.getElementById(id).classList.remove('selected');
+  });
+  if(copyType==='soft') document.getElementById('softCopyBtn').classList.add('selected');
+  if(copyType==='hard') document.getElementById('hardCopyBtn').classList.add('selected');
+  if(deliveryType==='pickup') document.getElementById('pickupBtn').classList.add('selected');
+  if(deliveryType==='shipping') document.getElementById('shipBtn').classList.add('selected');
+}
+
+function updateTotal() {
+  let total = 0;
+  if(copyType==='soft') total = softPrice;
+  else if(copyType==='hard') total = hardPrice + (deliveryType==='shipping'?SHIPPING_FEE:0);
+  document.getElementById('totalAmount').innerText = `₦${total.toLocaleString()}`;
+}
+
+function validateModal() {
+  const email = document.getElementById('customerEmail').value;
+  const continueBtn = document.getElementById('continueBtn');
+  shippingAddressVal = document.getElementById('shippingAddress').value;
+
+  let validEmail = /^[^\s@]+@[^\s@]+\.[A-Za-z]{2,}$/.test(email);
+  let ready = validEmail && copyType && (copyType==='soft' || (copyType==='hard' && deliveryType && (deliveryType==='pickup' || (deliveryType==='shipping' && shippingAddressVal.trim()!==''))));
+  
+  continueBtn.disabled = !ready;
+  continueBtn.classList.toggle('disabled', !ready);
+}
+
 function pay() {
   const email = document.getElementById('customerEmail').value;
-  if (!email) return;
+  if(!email || document.getElementById('continueBtn').disabled) return;
 
-  // Setup Paystack first
+  let amount = 0;
+  if(copyType==='soft') amount = softPrice;
+  else if(copyType==='hard') amount = hardPrice + (deliveryType==='shipping'?SHIPPING_FEE:0);
+
   const handler = PaystackPop.setup({
     key: 'pk_test_a79b03c08389a284eb1c5cb1add352d033c9e5f2',
     email: email,
-    amount: 7000 * 100,
+    amount: amount * 100,
     currency: "NGN",
     ref: 'REF-' + Date.now(),
     callback: function(response) {
       alert("Payment Successful! Reference: " + response.reference);
+      if(copyType==='soft') downloadBook(); // define your downloadBook() function
     },
     onClose: function() {
       alert("Payment window closed.");
     }
   });
 
-  // Open Paystack popup immediately
   handler.openIframe();
-
-  // Close modal after opening Paystack
-  document.getElementById('customerEmail').value = '';
-  const continueBtn = document.getElementById('continueBtn');
-  continueBtn.disabled = true;
-  continueBtn.classList.add('disabled');
-  document.getElementById('emailModal').style.display = 'none';
+  closeModal();
 }
 </script>
 
@@ -418,7 +599,7 @@ function pay() {
   <h2 class="featured__title">The Colour Of Silence</h2>
 
   <div class="featured__prices">
-    <span class="featured__discount">₦7,000</span>
+    <span class="featured__discount">₦5,000</span>
     <span class="featured__price">₦15,099</span>
   </div>
 
@@ -438,7 +619,7 @@ function pay() {
           <h2 class="featured__title">Cooing Of A Homing Pigeon</h2>
 
           <div class="featured__prices">
-            <span class="featured__discount">₦7,000</span>
+            <span class="featured__discount">₦5,000</span>
             <span class="featured__price">₦15,099</span>
           </div>
 
@@ -457,7 +638,7 @@ function pay() {
           <h2 class="featured__title">Featured Book</h2>
 
           <div class="featured__prices">
-             <span class="featured__discount">₦7,000</span>
+             <span class="featured__discount">₦5,000</span>
             <span class="featured__price">₦15,099</span>
           </div>
 
@@ -666,7 +847,7 @@ function pay() {
     <h2 class="new__title">The Colour Of Silence</h2>
 
     <div class="new__prices">
-      <span class="new__discount">₦7,000</span>
+      <span class="new__discount">₦5,000</span>
       <span class="new__price">₦15,099</span>
     </div>
 
@@ -692,7 +873,7 @@ function pay() {
     <h2 class="new__title" title="Cooing Of A Homing Pigeon">Cooing Of A Homing ...</h2>
 
     <div class="new__prices">
-      <span class="new__discount">₦7,000</span>
+      <span class="new__discount">₦5,000</span>
       <span class="new__price">₦15,099</span>
     </div>
 
