@@ -122,8 +122,6 @@ function validateEmail() {
 
 </script>
 
-
-
   </head>
   <body>
     <!--==================== HEADER ====================-->
@@ -255,7 +253,8 @@ function validateEmail() {
     <img src="assets/img/home-book-1.png" alt="image" class="home__img" />
     <div class="image-overlay">
       <a href="https://colour-of-silence.easycharts.com.ng/" class="overlay-btn">View 3D</a>
-      <a href="#" class="overlay-btn" onclick="openEmailModal()">Order Now</a>
+      <!-- Call selectBook instead of openEmailModal to pass book name -->
+      <a href="#" class="overlay-btn" onclick="selectBook('The Colour Of Silence')">Order Now</a>
     </div>
   </div>
 </article>
@@ -266,7 +265,8 @@ function validateEmail() {
           <img src="assets/img/home-book-2.png" alt="image" class="home__img" />
           <div class="image-overlay">
             <a href="https://cooing-of-a-homing-pigeon.easycharts.com.ng/" class="overlay-btn">View 3D</a>
-            <a href="#" class="overlay-btn" onclick="openEmailModal()">Order Now</a>
+            <!-- Call selectBook instead of openEmailModal to pass book name -->
+            <a href="#" class="overlay-btn" onclick="selectBook('Cooing Of A Homing Pigeon')">Order Now</a>
           </div>
         </div>
       </article>
@@ -424,13 +424,19 @@ function validateEmail() {
 }
 </style>
 
-
-
         </div>
       </section>
        <div class="modal-bg" id="emailModal">
   <div class="modal">
     <h2>Complete Your Order</h2>
+  
+<!-- Selected Book -->
+<div class="selected-book">
+  
+  <span class="value" id="selectedBookName">—</span>
+  </br>
+</div>
+</br>
 
     <!-- Email -->
     <input type="email" id="customerEmail" placeholder="you@example.com" oninput="validateModal()" />
@@ -479,6 +485,15 @@ function validateEmail() {
 </div>
 
 <script>
+  let selectedBook = "";
+
+function selectBook(bookName) {
+  selectedBook = bookName;
+  <!-- Update selectedBookName display BEFORE opening modal so title shows correctly -->
+  document.getElementById('selectedBookName').innerText = bookName;
+  openEmailModal();
+}
+
   function downloadBook() {
   const link = document.createElement('a');
   link.href = '/path-to-your-book.pdf'; // replace with your actual PDF file path
@@ -579,23 +594,44 @@ function pay() {
   else if(copyType==='hard') amount = hardPrice + (deliveryType==='shipping'?SHIPPING_FEE:0);
 
   const handler = PaystackPop.setup({
-    key: 'pk_test_a79b03c08389a284eb1c5cb1add352d033c9e5f2',
-    email: email,
-    amount: amount * 100,
-    currency: "NGN",
-    ref: 'REF-' + Date.now(),
-    callback: function(response) {
-      alert("Payment Successful! Reference: " + response.reference);
-      if(copyType==='soft') downloadBook(); // define your downloadBook() function
-    },
-    onClose: function() {
-      alert("Payment window closed.");
-    }
-  });
+  key: 'pk_test_a79b03c08389a284eb1c5cb1add352d033c9e5f2',
+  email: email,
+  amount: amount * 100,
+  currency: "NGN",
+  ref: 'REF-' + Date.now(),
 
-  handler.openIframe();
-  closeModal();
+  metadata: {
+    custom_fields: [
+      {
+        display_name: "Book",
+        variable_name: "book_title",
+        value: selectedBook
+      },
+      {
+        display_name: "Format",
+        variable_name: "format",
+        value: copyType === 'soft' ? 'Soft Copy' : 'Hard Copy'
+      },
+      {
+        display_name: "Delivery",
+        variable_name: "delivery",
+        value: deliveryType || 'N/A'
+      }
+    ]
+  },
+
+  callback: function(response) {
+    alert("Payment Successful! Reference: " + response.reference);
+    if (copyType === 'soft') downloadBook();
+  },
+
+  onClose: function() {
+    alert("Payment window closed.");
+  }
+});
+handler.openIframe();
 }
+
 </script>
 
       <!--==================== SERVICES ====================-->
@@ -637,7 +673,10 @@ function pay() {
     <span class="featured__price">₦15,099</span>
   </div>
 
-  <button class="button" onclick="openEmailModal()" >Order Now</button>
+ <button class="button" onclick="selectBook('The Colour Of Silence')">
+  Order Now
+</button>
+
 
   <div class="featured__actions">
     <button><i class="ri-heart-3-line"></i></button>
@@ -650,14 +689,14 @@ function pay() {
 
         <article class="featured__card swiper-slide">
           <img src="assets/img/home-book-2.png" alt="image" class="featurd__img" />
-          <h2 class="featured__title">Cooing Of A Homing Pigeon</h2>
+          <h2 class="featured__title">Cooing Of A Homing Pigeon</h2>
 
           <div class="featured__prices">
             <span class="featured__discount">₦5,000</span>
             <span class="featured__price">₦15,099</span>
           </div>
 
-          <button class="button" onclick="openEmailModal()">Order Now</button>
+          <button class="button" onclick="selectBook('Cooing Of A Homing Pigeon')">Order Now</button>
 
           <div class="featured__actions">
             <button><i class="ri-heart-3-line"></i></button>
@@ -667,124 +706,6 @@ function pay() {
           </div>
         </article>
 
-        <!-- <article class="featured__card swiper-slide">
-          <img src="assets/img/book-4.png" alt="image" class="featurd__img" />
-          <h2 class="featured__title">Featured Book</h2>
-
-          <div class="featured__prices">
-             <span class="featured__discount">₦5,000</span>
-            <span class="featured__price">₦15,099</span>
-          </div>
-
-          <button class="button">Order Now</button>
-
-          <div class="featured__actions">
-            <button><i class="ri-heart-3-line"></i></button>
-            <button><i class="ri-eye-line"></i></button>
-          </div>
-        </article>
-
-        <article class="featured__card swiper-slide">
-          <img src="assets/img/book-5.png" alt="image" class="featurd__img" />
-          <h2 class="featured__title">Featured Book</h2>
-
-          <div class="featured__prices">
-            <span class="featured__discount">$11.99</span>
-            <span class="featured__price">$15.99</span>
-          </div>
-
-          <button class="button">Order Now</button>
-
-          <div class="featured__actions">
-            <button><i class="ri-heart-3-line"></i></button>
-            <button><i class="ri-eye-line"></i></button>
-          </div>
-        </article>
-
-        <article class="featured__card swiper-slide">
-          <img src="assets/img/book-6.png" alt="image" class="featurd__img" />
-          <h2 class="featured__title">Featured Book</h2>
-
-          <div class="featured__prices">
-            <span class="featured__discount">$11.99</span>
-            <span class="featured__price">$15.99</span>
-          </div>
-
-          <button class="button">Order Now</button>
-
-          <div class="featured__actions">
-            <button><i class="ri-heart-3-line"></i></button>
-            <button><i class="ri-eye-line"></i></button>
-          </div>
-        </article>
-
-        <article class="featured__card swiper-slide">
-          <img src="assets/img/book-7.png" alt="image" class="featurd__img" />
-          <h2 class="featured__title">Featured Book</h2>
-
-          <div class="featured__prices">
-            <span class="featured__discount">$11.99</span>
-            <span class="featured__price">$15.99</span>
-          </div>
-
-          <button class="button">Order Now</button>
-
-          <div class="featured__actions">
-            <button><i class="ri-heart-3-line"></i></button>
-            <button><i class="ri-eye-line"></i></button>
-          </div>
-        </article>
-
-        <article class="featured__card swiper-slide">
-          <img src="assets/img/book-8.png" alt="image" class="featurd__img" />
-          <h2 class="featured__title">Featured Book</h2>
-
-          <div class="featured__prices">
-            <span class="featured__discount">$11.99</span>
-            <span class="featured__price">$15.99</span>
-          </div>
-
-          <button class="button">Order Now</button>
-
-          <div class="featured__actions">
-            <button><i class="ri-heart-3-line"></i></button>
-            <button><i class="ri-eye-line"></i></button>
-          </div>
-        </article>
-
-        <article class="featured__card swiper-slide">
-          <img src="assets/img/book-4.png" alt="image" class="featurd__img" />
-          <h2 class="featured__title">Featured Book</h2>
-
-          <div class="featured__prices">
-            <span class="featured__discount">$11.99</span>
-            <span class="featured__price">$15.99</span>
-          </div>
-
-          <button class="button">Order Now</button>
-
-          <div class="featured__actions">
-            <button><i class="ri-heart-3-line"></i></button>
-            <button><i class="ri-eye-line"></i></button>
-          </div>
-        </article>
-
-        <article class="featured__card swiper-slide">
-          <img src="assets/img/book-1.png" alt="image" class="featurd__img" />
-          <h2 class="featured__title">Featured Book</h2>
-
-          <div class="featured__prices">
-            <span class="featured__discount">$11.99</span>
-            <span class="featured__price">$15.99</span>
-          </div>
-
-          <button class="button">Order Now</button>
-
-          <div class="featured__actions">
-            <button><i class="ri-heart-3-line"></i></button>
-            <button><i class="ri-eye-line"></i></button>
-          </div>
-        </article> -->
 
       </div>
 
@@ -872,10 +793,26 @@ function pay() {
   .new__btn-order:hover {
     background: #27ae60;
   }
+  /* Default: desktop */
+.btn-text-mobile {
+  display: none;
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .btn-text-desktop {
+    display: none;
+  }
+  .btn-text-mobile {
+    display: inline;
+  }
+}
+
+  
 </style>
 
-
-<a href="https://colour-of-silence.easycharts.com.ng/" class="new__card swiper-slide">
+<!-- Changed from <a href> to <div> to prevent navigation, buttons handle actions -->
+<div class="new__card swiper-slide">
   <img src="assets/img/home-book-1.png" alt="" class="new__img" />
   <div>
     <h2 class="new__title">The Colour Of Silence</h2>
@@ -895,16 +832,20 @@ function pay() {
 
     <div class="new__buttons">
       <button class="new__btn new__btn-3d" onclick="location.href='https://colour-of-silence.easycharts.com.ng/'">View 3D</button>
-      <button class="new__btn new__btn-order" onclick="openEmailModal()">Order Now</button>
+     <button class="new__btn new__btn-order" onclick="selectBook('The Colour Of Silence')">
+  <span class="btn-text-desktop">Order Now</span>
+  <span class="btn-text-mobile">Order</span>
+</button>
+
     </div>
   </div>
-</a>
+</div>
 
-
-              <a href="https://cooing-of-a-homing-pigeon.easycharts.com.ng/" class="new__card swiper-slide">
+<!-- Changed from <a href> to <div> to prevent navigation, buttons handle actions -->
+<div class="new__card swiper-slide">
   <img src="assets/img/home-book-2.png" alt="" class="new__img" />
   <div>
-    <h2 class="new__title" title="Cooing Of A Homing Pigeon">Cooing Of A Homing ...</h2>
+    <h2 class="new__title" title="Cooing Of A Homing Pigeon">Cooing Of A Homing ...</h2>
 
     <div class="new__prices">
       <span class="new__discount">₦5,000</span>
@@ -920,212 +861,19 @@ function pay() {
     </div>
 
     <div class="new__buttons">
-      <button class="new__btn new__btn-3d" onclick="location.href='https://colour-of-silence.easycharts.com.ng/'">View 3D</button>
-      <button class="new__btn new__btn-order" onclick="openEmailModal()">Order Now</button>
+      <button class="new__btn new__btn-3d" onclick="location.href='https://cooing-of-a-homing-pigeon.easycharts.com.ng/'">View 3D</button>
+     <button class="new__btn new__btn-order" onclick="selectBook('Cooing Of A Homing Pigeon')">
+  <span class="btn-text-desktop">Order Now</span>
+  <span class="btn-text-mobile">Order</span>
+</button>
+
     </div>
   </div>
-</a>
-              <!-- <a href="#" class="new__card swiper-slide">
-  <img src="assets/img/book-3.png" alt="" class="new__img" />
-  <div>
-    <h2 class="new__title">New Book</h2>
-
-    <div class="new__prices">
-      <span class="new__discount">$7.99</span>
-      <span class="new__price">$15.99</span>
-    </div>
-
-    <div class="new__stars">
-      <i class="ri-star-fill"></i>
-      <i class="ri-star-fill"></i>
-      <i class="ri-star-fill"></i>
-      <i class="ri-star-fill"></i>
-      <i class="ri-star-half-fill"></i>
-    </div>
-
-    <div class="new__buttons">
-      <button class="new__btn new__btn-3d">View 3D</button>
-      <button class="new__btn new__btn-order">Order Now</button>
-    </div>
-  </div>
-</a>
-
-              <a href="#" class="new__card swiper-slide">
-  <img src="assets/img/book-4.png" alt="" class="new__img" />
-  <div>
-    <h2 class="new__title">New Book</h2>
-
-    <div class="new__prices">
-      <span class="new__discount">$7.99</span>
-      <span class="new__price">$15.99</span>
-    </div>
-
-    <div class="new__stars">
-      <i class="ri-star-fill"></i>
-      <i class="ri-star-fill"></i>
-      <i class="ri-star-fill"></i>
-      <i class="ri-star-fill"></i>
-      <i class="ri-star-half-fill"></i>
-    </div>
-
-    <div class="new__buttons">
-      <button class="new__btn new__btn-3d">View 3D</button>
-      <button class="new__btn new__btn-order">Order Now</button>
-    </div>
-  </div>
-</a>
-
-              <a href="#" class="new__card swiper-slide">
-  <img src="assets/img/book-5.png" alt="" class="new__img" />
-  <div>
-    <h2 class="new__title">New Book</h2>
-
-    <div class="new__prices">
-      <span class="new__discount">$7.99</span>
-      <span class="new__price">$15.99</span>
-    </div>
-
-    <div class="new__stars">
-      <i class="ri-star-fill"></i>
-      <i class="ri-star-fill"></i>
-      <i class="ri-star-fill"></i>
-      <i class="ri-star-fill"></i>
-      <i class="ri-star-half-fill"></i>
-    </div>
-
-    <div class="new__buttons">
-      <button class="new__btn new__btn-3d">View 3D</button>
-      <button class="new__btn new__btn-order">Order Now</button>
-    </div>
-  </div>
-</a>
+</div>
             </div>
           </div>
           <div class="new__swiper swiper">
             <div class="swiper-wrapper">
-              <a href="#" class="new__card swiper-slide">
-  <img src="assets/img/book-9.png" alt="" class="new__img" />
-  <div>
-    <h2 class="new__title">New Book</h2>
-
-    <div class="new__prices">
-      <span class="new__discount">$7.99</span>
-      <span class="new__price">$15.99</span>
-    </div>
-
-    <div class="new__stars">
-      <i class="ri-star-fill"></i>
-      <i class="ri-star-fill"></i>
-      <i class="ri-star-fill"></i>
-      <i class="ri-star-fill"></i>
-      <i class="ri-star-half-fill"></i>
-    </div>
-
-    <div class="new__buttons">
-      <button class="new__btn new__btn-3d">View 3D</button>
-      <button class="new__btn new__btn-order">Order Now</button>
-    </div>
-  </div>
-</a>
-
-            <a href="#" class="new__card swiper-slide">
-  <img src="assets/img/book-8.png" alt="" class="new__img" />
-  <div>
-    <h2 class="new__title">New Book</h2>
-
-    <div class="new__prices">
-      <span class="new__discount">$7.99</span>
-      <span class="new__price">$15.99</span>
-    </div>
-
-    <div class="new__stars">
-      <i class="ri-star-fill"></i>
-      <i class="ri-star-fill"></i>
-      <i class="ri-star-fill"></i>
-      <i class="ri-star-fill"></i>
-      <i class="ri-star-half-fill"></i>
-    </div>
-
-    <div class="new__buttons">
-      <button class="new__btn new__btn-3d">View 3D</button>
-      <button class="new__btn new__btn-order">Order Now</button>
-    </div>
-  </div>
-</a>
-              <a href="#" class="new__card swiper-slide">
-  <img src="assets/img/book-7.png" alt="" class="new__img" />
-  <div>
-    <h2 class="new__title">New Book</h2>
-
-    <div class="new__prices">
-      <span class="new__discount">$7.99</span>
-      <span class="new__price">$15.99</span>
-    </div>
-
-    <div class="new__stars">
-      <i class="ri-star-fill"></i>
-      <i class="ri-star-fill"></i>
-      <i class="ri-star-fill"></i>
-      <i class="ri-star-fill"></i>
-      <i class="ri-star-half-fill"></i>
-    </div>
-
-    <div class="new__buttons">
-      <button class="new__btn new__btn-3d">View 3D</button>
-      <button class="new__btn new__btn-order">Order Now</button>
-    </div>
-  </div>
-</a>
-
-              <a href="#" class="new__card swiper-slide">
-  <img src="assets/img/book-6.png" alt="" class="new__img" />
-  <div>
-    <h2 class="new__title">New Book</h2>
-
-    <div class="new__prices">
-      <span class="new__discount">$7.99</span>
-      <span class="new__price">$15.99</span>
-    </div>
-
-    <div class="new__stars">
-      <i class="ri-star-fill"></i>
-      <i class="ri-star-fill"></i>
-      <i class="ri-star-fill"></i>
-      <i class="ri-star-fill"></i>
-      <i class="ri-star-half-fill"></i>
-    </div>
-
-    <div class="new__buttons">
-      <button class="new__btn new__btn-3d">View 3D</button>
-      <button class="new__btn new__btn-order">Order Now</button>
-    </div>
-  </div>
-</a>
-
-              <a href="#" class="new__card swiper-slide">
-  <img src="assets/img/book-5.png" alt="" class="new__img" />
-  <div>
-    <h2 class="new__title">New Book</h2>
-
-    <div class="new__prices">
-      <span class="new__discount">$7.99</span>
-      <span class="new__price">$15.99</span>
-    </div>
-
-    <div class="new__stars">
-      <i class="ri-star-fill"></i>
-      <i class="ri-star-fill"></i>
-      <i class="ri-star-fill"></i>
-      <i class="ri-star-fill"></i>
-      <i class="ri-star-half-fill"></i>
-    </div>
-
-    <div class="new__buttons">
-      <button class="new__btn new__btn-3d">View 3D</button>
-      <button class="new__btn new__btn-order">Order Now</button>
-    </div>
-  </div>
-</a> -->
             </div>
           </div>
         </div>
@@ -1297,24 +1045,21 @@ function pay() {
             <h3 class="footer__title">Social</h3>
             <div class="footer__social">
               <a
-                href=" https://www.facebook.com/
-              "
+                href=" https://www.facebook.com/"
                 target="_blank"
                 class="footer__social-link"
               >
                 <i class="ri-facebook-circle-line"></i>
               </a>
               <a
-                href=" https://www.instagram.com/
-              "
+                href=" https://www.instagram.com/"
                 target="_blank"
                 class="footer__social-link"
               >
                 <i class="ri-instagram-line"></i>
               </a>
               <a
-                href=" https://twitter.com/
-              "
+                href=" https://twitter.com/"
                 target="_blank"
                 class="footer__social-link"
               >
@@ -1323,7 +1068,6 @@ function pay() {
             </div>
           </div>
         </div>
-      </div>
      <span class="footer__copy">
   &#169; All Rights Reserved By Easy Charts Enterprises
 </span>
