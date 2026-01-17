@@ -595,43 +595,50 @@ function pay() {
   else if(copyType==='hard') amount = hardPrice + (deliveryType==='shipping'?SHIPPING_FEE:0);
 
   const handler = PaystackPop.setup({
-  key: 'pk_test_a79b03c08389a284eb1c5cb1add352d033c9e5f2',
-  email: email,
-  amount: amount * 100,
-  currency: "NGN",
-  ref: 'REF-' + Date.now(),
+    key: 'pk_test_a79b03c08389a284eb1c5cb1add352d033c9e5f2',
+    email: email,
+    amount: amount * 100,
+    currency: "NGN",
+    ref: 'REF-' + Date.now(),
 
-  metadata: {
-    custom_fields: [
-      {
-        display_name: "Book",
-        variable_name: "book_title",
-        value: selectedBook
-      },
-      {
-        display_name: "Format",
-        variable_name: "format",
-        value: copyType === 'soft' ? 'Soft Copy' : 'Hard Copy'
-      },
-      {
-        display_name: "Delivery",
-        variable_name: "delivery",
-        value: deliveryType || 'N/A'
-      }
-    ]
-  },
+    metadata: {
+      custom_fields: [
+        {
+          display_name: "Book",
+          variable_name: "book_title",
+          value: selectedBook
+        },
+        {
+          display_name: "Format",
+          variable_name: "format",
+          value: copyType === 'soft' ? 'Soft Copy' : 'Hard Copy'
+        },
+        {
+          display_name: "Delivery",
+          variable_name: "delivery",
+          value: deliveryType || 'N/A'
+        },
+        ...(deliveryType === 'shipping' ? [{
+          display_name: "Shipping Address",
+          variable_name: "shipping_address",
+          value: shippingAddressVal || 'N/A'
+        }] : [])
+      ]
+    },
 
-  callback: function(response) {
-    alert("Payment Successful! Reference: " + response.reference);
-    if (copyType === 'soft') downloadBook();
-  },
+    callback: function(response) {
+      alert("Payment Successful! Reference: " + response.reference);
+      if (copyType === 'soft') downloadBook();
+    },
 
-  onClose: function() {
-    alert("Payment window closed.");
-  }
-});
-handler.openIframe();
+    onClose: function() {
+      alert("Payment window closed.");
+    }
+  });
+
+  handler.openIframe();
 }
+
 
 </script>
 
