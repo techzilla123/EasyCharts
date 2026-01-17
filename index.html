@@ -426,8 +426,27 @@ function validateEmail() {
 
         </div>
       </section>
-       <div class="modal-bg" id="emailModal">
-  <div class="modal">
+    <div class="modal-bg" id="emailModal" style="
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  justify-content: center;
+  align-items: center;
+  overflow: auto;
+  padding: 1rem;
+  z-index: 999;
+">
+
+  <div class="modal" style="
+    background: white;
+    border-radius: 1rem;
+    max-height: 90vh; /* prevent modal from exceeding viewport */
+    overflow-y: auto; /* make modal scrollable */
+    width: 100%;
+    max-width: 400px;
+    padding: 1rem 1.5rem;
+  ">
     <h2>Complete Your Order</h2>
   
 <!-- Selected Book -->
@@ -486,13 +505,19 @@ function validateEmail() {
 </div>
 
 <script>
+  const PAYSTACK_FEE_PERCENT = 2.61111111 / 100;
+
   let selectedBook = "";
 
 function selectBook(bookName) {
   selectedBook = bookName;
-  <!-- Update selectedBookName display BEFORE opening modal so title shows correctly -->
+  // Update selectedBookName display BEFORE opening modal so title shows correctly
   document.getElementById('selectedBookName').innerText = bookName;
-  openEmailModal();
+  openEmailModal(); // Only open when this function is called
+}
+
+function openEmailModal() {
+  document.getElementById('emailModal').style.display = 'flex';
 }
 
   function downloadBook() {
@@ -509,9 +534,8 @@ const SHIPPING_FEE = 2000;
 const softPrice = 5000;
 const hardPrice = 7000;
 
-function openModal() {
-  document.getElementById('emailModal').style.display = 'flex';
-}
+
+
 function closeModal() {
   document.getElementById('emailModal').style.display = 'none';
   resetModal();
@@ -568,11 +592,36 @@ function updateSelectionUI() {
 }
 
 function updateTotal() {
-  let total = 0;
-  if(copyType==='soft') total = softPrice;
-  else if(copyType==='hard') total = hardPrice + (deliveryType==='shipping'?SHIPPING_FEE:0);
-  document.getElementById('totalAmount').innerText = `₦${total.toLocaleString()}`;
+  let baseTotal = 0;
+  if (copyType === 'soft') baseTotal = softPrice;
+  else if (copyType === 'hard') baseTotal = hardPrice + (deliveryType === 'shipping' ? SHIPPING_FEE : 0);
+
+  const feeAmount = Math.ceil(baseTotal * PAYSTACK_FEE_PERCENT);
+  const totalWithFee = baseTotal + feeAmount;
+
+  if (baseTotal > 0) {
+    document.getElementById('totalAmount').innerHTML = `
+      <div style="border-top: 1px solid #e5e7eb; padding-top: 0.75rem; margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.875rem; font-weight: 500;">
+        <div style="display: flex; justify-content: space-between;">
+          <span>Subtotal</span>
+          <span>₦${baseTotal.toLocaleString()}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span>Bank Charges</span>
+          <span>₦${feeAmount.toLocaleString()}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-weight: 600;">
+          <span>Total</span>
+          <span>₦${totalWithFee.toLocaleString()}</span>
+        </div>
+      </div>
+    `;
+  } else {
+    document.getElementById('totalAmount').innerHTML = `₦0`;
+  }
 }
+
+
 
 function validateModal() {
   const email = document.getElementById('customerEmail').value;
@@ -590,14 +639,18 @@ function pay() {
   const email = document.getElementById('customerEmail').value;
   if(!email || document.getElementById('continueBtn').disabled) return;
 
-  let amount = 0;
-  if(copyType==='soft') amount = softPrice;
-  else if(copyType==='hard') amount = hardPrice + (deliveryType==='shipping'?SHIPPING_FEE:0);
+let baseTotal = 0;
+if(copyType==='soft') baseTotal = softPrice;
+else if(copyType==='hard') baseTotal = hardPrice + (deliveryType==='shipping'?SHIPPING_FEE:0);
+
+let feeAmount = Math.ceil(baseTotal * PAYSTACK_FEE_PERCENT);
+let amountWithFee = baseTotal + feeAmount;
+
 
   const handler = PaystackPop.setup({
     key: 'pk_test_a79b03c08389a284eb1c5cb1add352d033c9e5f2',
     email: email,
-    amount: amount * 100,
+    amount: amountWithFee * 100,
     currency: "NGN",
     ref: 'REF-' + Date.now(),
 
